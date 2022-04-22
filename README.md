@@ -22,11 +22,10 @@
 - [Prerequisites Tools](#prerequisites-tools)
 - [Setup Instructions](#setup-instructions)
 - [Getting Started](#getting-started)
-- [License](#license)
 
 
 ## Introduction
-This repo contains the javascript code for the concepts I learned during the "Server-side Development with NodeJS, Express, and MongoDB" course on Coursera. It also contains the assignment work which I did to get the credits for this course. Check my certificate [here](https://www.coursera.org/account/accomplishments/verify/GDNNQP4VUQRT), and also this check this amazing course over [here](https://www.coursera.org/learn/server-side-nodejs).
+This repo contains the javascript code for the concepts I learned during the "Server-side Development with NodeJS, Express, and MongoDB" course on Coursera. It also contains the assignment work which I did to get the credits for this course. Check my certificate [here](https://www.coursera.org/account/accomplishments/certificate/KZKMXLVMM5M6), and also this check this amazing course over [here](https://www.coursera.org/learn/server-side-nodejs).
 
 
 ## Prerequisites Tools
@@ -41,7 +40,7 @@ To start sending different requests (GET, PUT,...) to your back-end you can use 
 ## Setup Instructions
 Clone the repository
 ```bash
-$ git clone https://github.com/Dhyeythumar/Server-side-Development-with-NodeJS-ExpressJS-and-MongoDB.git
+$ git clone https://github.com/Tuhin-SnapD/Server-Restaurant.git
 $ cd Server-side-Development-with-NodeJS-ExpressJS-and-MongoDB
 ```
 **Install and Update Node JS Dependency**
