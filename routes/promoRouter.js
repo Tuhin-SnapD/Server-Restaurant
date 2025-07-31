@@ -4,10 +4,24 @@ const mongoose = require('mongoose');
 const Promotions = require('../models/promotions');
 const authenticate = require('../authenticate');
 const cors = require('./cors');
+const fs = require('fs');
+const path = require('path');
 
 const promoRouter = express.Router();
 
 promoRouter.use(bodyParser.json());
+
+// Helper function to get JSON data as fallback
+function getJsonData() {
+    try {
+        const dbPath = path.join(__dirname, '..', 'db.json');
+        const data = fs.readFileSync(dbPath, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('Error reading JSON data:', error);
+        return { promotions: [] };
+    }
+}
 
 promoRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
@@ -16,7 +30,10 @@ promoRouter.route('/')
         const promotions = await Promotions.find(req.query);
         res.status(200).json(promotions);
     } catch (err) {
-        next(err);
+        console.log('MongoDB connection failed, using JSON fallback');
+        // Fallback to JSON data
+        const jsonData = getJsonData();
+        res.status(200).json(jsonData.promotions || []);
     }
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
@@ -28,7 +45,7 @@ promoRouter.route('/')
         next(err);
     }
 })
-.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.put(cors.corsWithOptions, (req, res, next) => {
     res.status(403).json({ message: 'PUT operation not supported on /promotions' });
 })
 .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
@@ -52,10 +69,19 @@ promoRouter.route('/:promoId')
         }
         res.status(200).json(promotion);
     } catch (err) {
-        next(err);
+        console.log('MongoDB connection failed, using JSON fallback');
+        // Fallback to JSON data
+        const jsonData = getJsonData();
+        const promotion = jsonData.promotions ? jsonData.promotions.find(p => p.id == req.params.promoId) : null;
+        if (!promotion) {
+            const err = new Error('Promotion not found');
+            err.status = 404;
+            return next(err);
+        }
+        res.status(200).json(promotion);
     }
 })
-.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.post(cors.corsWithOptions, (req, res, next) => {
     res.status(403).json({ message: `POST operation not supported on /promotions/${req.params.promoId}` });
 })
 .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
