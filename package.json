@@ -8,16 +8,6 @@
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www",
     "populate": "node populateDb.js",
-    "deploy": "node scripts/deploy.js",
-    "deploy:prod": "NODE_ENV=production node scripts/deploy.js",
-    "deploy:with-data": "node scripts/deploy.js --populate",
-    "server": "node server.js",
-    "server:prod": "NODE_ENV=production node server.js",
-    "db:backup": "node scripts/db-manager.js backup",
-    "db:restore": "node scripts/db-manager.js restore",
-    "db:clear": "node scripts/db-manager.js clear",
-    "db:stats": "node scripts/db-manager.js stats",
-    "db:migrate": "node scripts/db-manager.js migrate",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
