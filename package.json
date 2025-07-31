@@ -1,7 +1,7 @@
 {
-  "name": "restaurant-server",
+  "name": "restaurant-backend",
   "version": "1.0.0",
-  "description": "A modern restaurant management server with authentication and API endpoints",
+  "description": "Modern Node.js/Express backend for restaurant management system with MongoDB, authentication, and comprehensive API",
   "private": true,
   "main": "app.js",
   "scripts": {

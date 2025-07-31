@@ -7,7 +7,6 @@ A modern restaurant management server with authentication and API endpoints buil
 ### Prerequisites
 - Node.js >= 14.0.0
 - MongoDB (local or Atlas)
-- SSL certificates (for production HTTPS)
 
 ### Installation
 
@@ -37,30 +36,19 @@ Copy `env.example` to `.env` and configure:
 
 ```env
 # Server Configuration
-NODE_ENV=production
-PORT=443
-HTTP_PORT=80
+NODE_ENV=development
+PORT=8000
 
 # Database Configuration
-MONGO_URL=mongodb://your-mongodb-connection-string
+MONGO_URL=mongodb://127.0.0.1:27017/conFusion
 
 # Security
 SECRET_KEY=your-super-secret-key-here
 JWT_SECRET=your-jwt-secret-key-here
 
-# SSL Certificate Paths
-SSL_CERT_PATH=./certificate.pem
-SSL_KEY_PATH=./private.key
-
 # CORS Configuration
-ALLOWED_ORIGINS=https://your-frontend-domain.com
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:4200,http://localhost:8000
 ```
-
-### SSL Certificates
-
-For HTTPS in production, place your certificates:
-- `certificate.pem` - Your SSL certificate
-- `private.key` - Your private key
 
 ## 🗄️ Database Management
 
@@ -103,65 +91,17 @@ node scripts/db-manager.js clear users
 node scripts/db-manager.js
 ```
 
-## 🚀 Deployment
 
-### Production Deployment
-
-1. **Prepare your environment:**
-```bash
-# Set production environment
-export NODE_ENV=production
-
-# Install production dependencies
-npm install --production
-```
-
-2. **Deploy with automatic setup:**
-```bash
-# Deploy with database population
-npm run deploy:with-data
-
-# Deploy without database population
-npm run deploy:prod
-```
-
-3. **Manual deployment:**
-```bash
-# Start production server
-npm run server:prod
-
-# Or use the original start command
-npm start
-```
-
-### Deployment Scripts
-
-The deployment script (`scripts/deploy.js`) automatically:
-- ✅ Installs dependencies
-- ✅ Checks SSL certificates
-- ✅ Tests database connection
-- ✅ Creates necessary directories
-- ✅ Optionally populates database
-- ✅ Starts the server
-
-### SSL/HTTPS Setup
-
-The server automatically detects SSL certificates and:
-- Runs HTTPS on port 443 (or your configured port)
-- Redirects HTTP to HTTPS
-- Falls back to HTTP if no certificates found
 
 ## 📁 Project Structure
 
 ```
 Server-Restaurant/
 ├── app.js                 # Express app configuration
-├── server.js             # Production server with HTTPS
 ├── config.js             # Configuration management
 ├── populateDb.js         # Database population script
 ├── db.json              # Sample data
 ├── scripts/
-│   ├── deploy.js        # Deployment automation
 │   └── db-manager.js    # Database management
 ├── models/              # MongoDB models
 ├── routes/              # API routes
@@ -251,17 +191,12 @@ npm run db:backup
 
 ### Common Issues
 
-1. **SSL Certificate Errors:**
-   - Ensure certificate files exist and are readable
-   - Check file permissions (600 for private key)
-   - Verify certificate format (PEM)
-
-2. **Database Connection Issues:**
+1. **Database Connection Issues:**
    - Check MONGO_URL in environment variables
    - Ensure MongoDB is running
    - Verify network connectivity
 
-3. **Port Already in Use:**
+2. **Port Already in Use:**
    - Check if another process is using the port
    - Change PORT in environment variables
    - Kill existing processes: `lsof -ti:8000 | xargs kill`

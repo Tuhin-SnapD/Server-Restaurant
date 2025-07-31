@@ -49,7 +49,7 @@ jspm_packages/
 # Session files
 sessions/
 
-# SSL certificates
+# Certificate files
 *.pem
 *.key
 *.csr

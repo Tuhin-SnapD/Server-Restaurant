@@ -65,7 +65,7 @@ app.use(session({
     reapInterval: 3600 // 1 hour
   }),
   cookie: {
-    secure: false, // Set to true in production with HTTPS
+    secure: false,
     httpOnly: true,
     maxAge: 86400000 // 24 hours
   }
