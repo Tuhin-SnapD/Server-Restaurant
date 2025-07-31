@@ -1,49 +1,48 @@
-var express = require('express');
-var path = require('path');
-// var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var session = require('express-session');
-var FileStore = require('session-file-store')(session);
-var passport = require('passport');
-var authenticate = require('./authenticate');
-var config = require('./config');
+const express = require('express');
+const path = require('path');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const FileStore = require('session-file-store')(session);
+const passport = require('passport');
+const authenticate = require('./authenticate');
+const config = require('./config');
+const cors = require('cors');
 
-var index = require('./routes/index');
-var users = require('./routes/users');
-var dishRouter = require('./routes/dishRouter');
-var leaderRouter = require('./routes/leaderRouter');
-var promoRouter = require('./routes/promoRouter');
-var uploadRouter = require('./routes/uploadRouter');
-var favouriteRouter = require('./routes/favoriteRouter');
-var commentRouter = require('./routes/commentRouter')
+const index = require('./routes/index');
+const users = require('./routes/users');
+const dishRouter = require('./routes/dishRouter');
+const leaderRouter = require('./routes/leaderRouter');
+const promoRouter = require('./routes/promoRouter');
+const uploadRouter = require('./routes/uploadRouter');
+const favouriteRouter = require('./routes/favoriteRouter');
+const commentRouter = require('./routes/commentRouter');
+const feedbackRouter = require('./routes/feedbackRouter');
 
 const mongoose = require('mongoose');
-mongoose.Promise = require('bluebird');
-
-const Dishes = require('./models/dishes');
 
 const url = config.mongoUrl;
 
 const connect = mongoose.connect(url, {
-  useMongoClient: true
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 });
 
 connect.then((db) => {
-  console.log('Connected to server!');
+  console.log('Connected to MongoDB server successfully!');
 }, (err) => {
-  console.log(err);
+  console.error('MongoDB connection error:', err);
 });
 
-var app = express();
+const app = express();
 
-app.all('*', (req, res, nxt) => {
-  if(req.secure) {
-    return nxt();
-  } else {
-    res.redirect(307, 'https://' + req.hostname + ':' + app.get('secPort') + req.url);
-  }
+// Security middleware
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
 });
 
 // view engine setup
@@ -51,17 +50,27 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.use(logger('dev'));
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(session({
   name: 'session-id',
-  secret: 'Jesus-Loves-w@ch!ra-so-Much!!',
+  secret: config.secretKey,
   saveUninitialized: false,
   resave: false,
-  store: new FileStore()
+  store: new FileStore({
+    path: './sessions',
+    ttl: 86400, // 24 hours
+    reapInterval: 3600 // 1 hour
+  }),
+  cookie: {
+    secure: false, // Set to true in production with HTTPS
+    httpOnly: true,
+    maxAge: 86400000 // 24 hours
+  }
 }));
-// app.use(session({secret: 'SECRET'}));
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -70,16 +79,18 @@ app.use('/users', users);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// API routes
 app.use('/dishes', dishRouter);
 app.use('/leaders', leaderRouter);
 app.use('/promotions', promoRouter);
 app.use('/imageUpload', uploadRouter);
 app.use('/favorites', favouriteRouter);
-app.use('/comments',commentRouter);
+app.use('/comments', commentRouter);
+app.use('/feedback', feedbackRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  var err = new Error('Not Found');
+  const err = new Error('Not Found');
   err.status = 404;
   next(err);
 });

@@ -1,8 +1,16 @@
 body {
   padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background: linear-gradient(135deg, #FDFBF7 0%, #F5F5DC 100%);
+  color: #3E2723;
+  min-height: 100vh;
 }
 
 a {
-  color: #00B7FF;
+  color: #8B7355;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #6B4423;
 }
