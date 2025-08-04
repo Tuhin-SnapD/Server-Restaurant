@@ -4,37 +4,19 @@ const mongoose = require('mongoose');
 const Dishes = require('../models/dishes');
 const authenticate = require('../authenticate');
 const cors = require('./cors');
-const fs = require('fs');
-const path = require('path');
 
 const dishRouter = express.Router();
 
 dishRouter.use(bodyParser.json());
 
-// Helper function to get JSON data as fallback
-function getJsonData() {
-    try {
-        const dbPath = path.join(__dirname, '..', 'db.json');
-        const data = fs.readFileSync(dbPath, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Error reading JSON data:', error);
-        return { dishes: [] };
-    }
-}
-
 dishRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, async (req, res, next) => {
     try {
-        // Try MongoDB first
         const dishes = await Dishes.find(req.query);
         res.status(200).json(dishes);
     } catch (err) {
-        console.log('MongoDB connection failed, using JSON fallback');
-        // Fallback to JSON data
-        const jsonData = getJsonData();
-        res.status(200).json(jsonData.dishes);
+        next(err);
     }
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
@@ -70,16 +52,7 @@ dishRouter.route('/:dishId')
         }
         res.status(200).json(dish);
     } catch (err) {
-        console.log('MongoDB connection failed, using JSON fallback');
-        // Fallback to JSON data
-        const jsonData = getJsonData();
-        const dish = jsonData.dishes.find(d => d.id == req.params.dishId);
-        if (!dish) {
-            const err = new Error('Dish not found');
-            err.status = 404;
-            return next(err);
-        }
-        res.status(200).json(dish);
+        next(err);
     }
 })
 .post(cors.corsWithOptions, (req, res, next) => {
@@ -129,17 +102,7 @@ dishRouter.route('/:dishId/comments')
         }
         res.status(200).json(dish.comments);
     } catch (err) {
-        console.log('MongoDB connection failed, using JSON fallback');
-        // Fallback to JSON data
-        const jsonData = getJsonData();
-        const dish = jsonData.dishes.find(d => d.id == req.params.dishId);
-        if (!dish) {
-            const err = new Error('Dish not found');
-            err.status = 404;
-            return next(err);
-        }
-        const comments = jsonData.comments.filter(c => c.dishId == req.params.dishId);
-        res.status(200).json(comments);
+        next(err);
     }
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, async (req, res, next) => {

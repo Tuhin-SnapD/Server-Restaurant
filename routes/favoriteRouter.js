@@ -4,24 +4,10 @@ const mongoose = require('mongoose');
 const Favorites = require('../models/favorite');
 const authenticate = require('../authenticate');
 const cors = require('./cors');
-const fs = require('fs');
-const path = require('path');
 
 const favoriteRouter = express.Router();
 
 favoriteRouter.use(bodyParser.json());
-
-// Helper function to get JSON data as fallback
-function getJsonData() {
-    try {
-        const dbPath = path.join(__dirname, '..', 'db.json');
-        const data = fs.readFileSync(dbPath, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Error reading JSON data:', error);
-        return { favorites: [] };
-    }
-}
 
 favoriteRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
@@ -30,9 +16,7 @@ favoriteRouter.route('/')
         const favorites = await Favorites.find({ user: req.user._id }).populate('user').populate('dishes');
         res.status(200).json(favorites);
     } catch (err) {
-        console.log('MongoDB connection failed, using JSON fallback');
-        // Fallback to JSON data - return empty array for favorites since they're user-specific
-        res.status(200).json([]);
+        next(err);
     }
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, async (req, res, next) => {
@@ -78,9 +62,7 @@ favoriteRouter.route('/:dishId')
             res.status(200).json({ exists: exists, favorites: favorites });
         }
     } catch (err) {
-        console.log('MongoDB connection failed, using JSON fallback');
-        // Fallback to JSON data - return not found for favorites since they're user-specific
-        res.status(200).json({ exists: false, favorites: null });
+        next(err);
     }
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, async (req, res, next) => {

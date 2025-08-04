@@ -4,24 +4,10 @@ const mongoose = require('mongoose');
 const Leaders = require('../models/leaders');
 const authenticate = require('../authenticate');
 const cors = require('./cors');
-const fs = require('fs');
-const path = require('path');
 
 const leaderRouter = express.Router();
 
 leaderRouter.use(bodyParser.json());
-
-// Helper function to get JSON data as fallback
-function getJsonData() {
-    try {
-        const dbPath = path.join(__dirname, '..', 'db.json');
-        const data = fs.readFileSync(dbPath, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Error reading JSON data:', error);
-        return { leaders: [] };
-    }
-}
 
 leaderRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
@@ -30,10 +16,7 @@ leaderRouter.route('/')
         const leaders = await Leaders.find(req.query);
         res.status(200).json(leaders);
     } catch (err) {
-        console.log('MongoDB connection failed, using JSON fallback');
-        // Fallback to JSON data
-        const jsonData = getJsonData();
-        res.status(200).json(jsonData.leaders || []);
+        next(err);
     }
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
@@ -69,16 +52,7 @@ leaderRouter.route('/:leaderId')
         }
         res.status(200).json(leader);
     } catch (err) {
-        console.log('MongoDB connection failed, using JSON fallback');
-        // Fallback to JSON data
-        const jsonData = getJsonData();
-        const leader = jsonData.leaders ? jsonData.leaders.find(l => l.id == req.params.leaderId) : null;
-        if (!leader) {
-            const err = new Error('Leader not found');
-            err.status = 404;
-            return next(err);
-        }
-        res.status(200).json(leader);
+        next(err);
     }
 })
 .post(cors.corsWithOptions, (req, res, next) => {

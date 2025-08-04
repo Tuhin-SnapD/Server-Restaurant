@@ -4,24 +4,10 @@ const mongoose = require('mongoose');
 const Comments = require('../models/comments');
 const authenticate = require('../authenticate');
 const cors = require('./cors');
-const fs = require('fs');
-const path = require('path');
 
 const commentRouter = express.Router();
 
 commentRouter.use(bodyParser.json());
-
-// Helper function to get JSON data as fallback
-function getJsonData() {
-    try {
-        const dbPath = path.join(__dirname, '..', 'db.json');
-        const data = fs.readFileSync(dbPath, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Error reading JSON data:', error);
-        return { comments: [] };
-    }
-}
 
 commentRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
@@ -30,10 +16,7 @@ commentRouter.route('/')
         const comments = await Comments.find(req.query);
         res.status(200).json(comments);
     } catch (err) {
-        console.log('MongoDB connection failed, using JSON fallback');
-        // Fallback to JSON data
-        const jsonData = getJsonData();
-        res.status(200).json(jsonData.comments || []);
+        next(err);
     }
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, async (req, res, next) => {
@@ -70,16 +53,7 @@ commentRouter.route('/:commentId')
         }
         res.status(200).json(comment);
     } catch (err) {
-        console.log('MongoDB connection failed, using JSON fallback');
-        // Fallback to JSON data
-        const jsonData = getJsonData();
-        const comment = jsonData.comments ? jsonData.comments.find(c => c.id == req.params.commentId) : null;
-        if (!comment) {
-            const err = new Error('Comment not found');
-            err.status = 404;
-            return next(err);
-        }
-        res.status(200).json(comment);
+        next(err);
     }
 })
 .post(cors.corsWithOptions, (req, res, next) => {

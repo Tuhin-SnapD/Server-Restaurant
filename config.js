@@ -6,7 +6,7 @@ module.exports = {
     'mongoUrl': process.env.MONGO_URL || 'mongodb://127.0.0.1:27017/conFusion',
     'port': process.env.PORT || 8000,
     'nodeEnv': process.env.NODE_ENV || 'development',
-    'uploadPath': process.env.UPLOAD_PATH || './public/images',
+    'uploadPath': process.env.UPLOAD_PATH || './uploads',
     'maxFileSize': process.env.MAX_FILE_SIZE || 5242880,
     'sessionSecret': process.env.SESSION_SECRET || 'session-secret-key',
     'sessionTtl': process.env.SESSION_TTL || 86400,
