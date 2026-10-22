@@ -24,6 +24,8 @@ const mongoose = require('mongoose');
 
 const url = config.mongoUrl;
 
+mongoose.set('strictQuery', true);
+
 const connect = mongoose.connect(url, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -36,6 +38,8 @@ connect.then((db) => {
 });
 
 const app = express();
+
+app.disable('x-powered-by');
 
 // Security middleware
 app.use((req, res, next) => {
@@ -50,7 +54,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.use(logger('dev'));
-app.use(cors());
+app.use(cors({ origin: config.allowedOrigins }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -78,7 +82,7 @@ app.use('/', index);
 app.use('/users', users);
 
 // Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.resolve(config.uploadPath)));
 
 // API routes
 app.use('/dishes', dishRouter);
@@ -98,13 +102,38 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  let status = err.status || err.statusCode || 500;
+  let message = err.message || 'Internal Server Error';
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  if (err.name === 'CastError') {
+    status = 400;
+    message = 'Invalid identifier';
+  } else if (err.name === 'ValidationError') {
+    status = 400;
+    message = Object.values(err.errors || {})
+      .map((item) => item.message)
+      .join(', ') || 'Validation failed';
+  } else if (err.name === 'MulterError') {
+    status = 400;
+    message = err.code === 'LIMIT_FILE_SIZE' ? 'File is too large' : err.message;
+  } else if (err.code === 11000) {
+    status = 409;
+    message = 'A record with that value already exists';
+  }
+
+  if (status >= 500) {
+    console.error(err);
+  }
+
+  // Keep the default Express welcome page for browser requests, but always
+  // return JSON from the API so clients never receive an HTML error page.
+  if (req.method === 'GET' && req.path === '/' && req.accepts('html')) {
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
+    return res.status(status).render('error');
+  }
+
+  res.status(status).json({ error: message });
 });
 
 module.exports = app;

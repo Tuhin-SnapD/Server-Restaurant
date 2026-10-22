@@ -23,8 +23,8 @@ opts.secretOrKey = config.secretKey;
 exports.jwtPassport = passport.use(new JwtStrategy(opts,
     async (jwt_payload, done) => {
         try {
-            console.log("JWT payload: ", jwt_payload);
-            const user = await User.findOne({ _id: jwt_payload._id });
+            const user = await User.findOne({ _id: jwt_payload._id })
+                .select('username firstname lastname admin');
             if (user) {
                 return done(null, user);
             } else {
@@ -35,26 +35,48 @@ exports.jwtPassport = passport.use(new JwtStrategy(opts,
         }
     }));
 
+const getRequestToken = (req) =>
+    req.body.token || req.query.token || req.headers['x-access-token'] ||
+    req.headers['authorization']?.replace('Bearer ', '');
+
+const attachUser = async (req, res, next, token) => {
+    try {
+        const decoded = jwt.verify(token, config.secretKey);
+        const user = await User.findById(decoded._id)
+            .select('username firstname lastname admin');
+        if (!user) {
+            const err = new Error('You are not authenticated!');
+            err.status = 401;
+            return next(err);
+        }
+        req.decoded = decoded;
+        req.user = user;
+        next();
+    } catch (err) {
+        const authError = new Error('You are not authenticated!');
+        authError.status = 401;
+        next(authError);
+    }
+};
+
 exports.verifyUser = function (req, res, next) {
-    const token = req.body.token || req.query.token || req.headers['x-access-token'] || 
-                  req.headers['authorization']?.replace('Bearer ', '');
-    
-    if (token) {
-        jwt.verify(token, config.secretKey, function (err, decoded) {
-            if (err) {
-                const err = new Error('You are not authenticated!');
-                err.status = 401;
-                return next(err);
-            } else {
-                req.decoded = decoded;
-                next();
-            }
-        });
-    } else {
+    const token = getRequestToken(req);
+    if (!token) {
         const err = new Error('No token provided!');
         err.status = 403;
         return next(err);
     }
+    attachUser(req, res, next, token);
+};
+
+// Allows both anonymous and authenticated requests while attaching req.user
+// when a valid token is supplied.
+exports.verifyUserOptional = function (req, res, next) {
+    const token = getRequestToken(req);
+    if (!token) {
+        return next();
+    }
+    attachUser(req, res, next, token);
 };
 
 exports.verifyAdmin = function (req, res, next) {

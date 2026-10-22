@@ -1,19 +1,17 @@
-const express = require('express');
 const cors = require('cors');
-const app = express();
+const config = require('../config');
 
-const whitelist = ['http://localhost:3000', 'http://localhost:4200', 'http://localhost:8000']
-var corsOptionsDelegate = (req, callback) => {
-    var corsOptions;
-    console.log(req.header('Origin'));
-    if(whitelist.indexOf(req.header('Origin')) !== -1) {
-        corsOptions = { origin: true };
+const whitelist = config.allowedOrigins;
+
+const corsOptionsDelegate = (req, callback) => {
+    const origin = req.header('Origin');
+    // Requests without an Origin header (curl, server-to-server) are allowed.
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+        callback(null, { origin: true });
+    } else {
+        callback(null, { origin: false });
     }
-    else {
-        corsOptions = { origin: false };
-    }
-    callback(null, corsOptions);
 };
 
-exports.cors = cors();
+exports.cors = cors({ origin: whitelist });
 exports.corsWithOptions = cors(corsOptionsDelegate);

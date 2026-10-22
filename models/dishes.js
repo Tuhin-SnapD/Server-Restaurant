@@ -62,5 +62,7 @@ const dishSchema = new Schema({
     timestamps: true
 });
 
+dishSchema.index({ featured: 1, category: 1 });
+
 const Dishes = mongoose.model('Dish', dishSchema);
 module.exports = Dishes;

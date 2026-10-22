@@ -13,7 +13,7 @@ commentRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, async (req, res, next) => {
     try {
-        const comments = await Comments.find(req.query);
+        const comments = await Comments.find(req.query).lean();
         res.status(200).json(comments);
     } catch (err) {
         next(err);
@@ -23,8 +23,7 @@ commentRouter.route('/')
     try {
         req.body.author = req.user._id;
         const comment = await Comments.create(req.body);
-        console.log('Comment Created ', comment);
-        res.status(200).json(comment);
+        res.status(201).json(comment);
     } catch (err) {
         next(err);
     }

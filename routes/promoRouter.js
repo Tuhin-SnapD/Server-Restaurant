@@ -13,7 +13,7 @@ promoRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, async (req, res, next) => {
     try {
-        const promotions = await Promotions.find(req.query);
+        const promotions = await Promotions.find(req.query).lean();
         res.status(200).json(promotions);
     } catch (err) {
         next(err);
@@ -22,8 +22,7 @@ promoRouter.route('/')
 .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
     try {
         const promotion = await Promotions.create(req.body);
-        console.log('Promotion Created ', promotion);
-        res.status(200).json(promotion);
+        res.status(201).json(promotion);
     } catch (err) {
         next(err);
     }
@@ -44,7 +43,7 @@ promoRouter.route('/:promoId')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, async (req, res, next) => {
     try {
-        const promotion = await Promotions.findById(req.params.promoId);
+        const promotion = await Promotions.findById(req.params.promoId).lean();
         if (!promotion) {
             const err = new Error('Promotion not found');
             err.status = 404;
@@ -62,7 +61,7 @@ promoRouter.route('/:promoId')
     try {
         const promotion = await Promotions.findByIdAndUpdate(req.params.promoId, {
             $set: req.body
-        }, { new: true });
+        }, { new: true, runValidators: true });
         
         if (!promotion) {
             const err = new Error('Promotion not found');
@@ -77,7 +76,7 @@ promoRouter.route('/:promoId')
 })
 .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
     try {
-        const resp = await Promotions.findByIdAndRemove(req.params.promoId);
+        const resp = await Promotions.findByIdAndDelete(req.params.promoId);
         if (!resp) {
             const err = new Error('Promotion not found');
             err.status = 404;

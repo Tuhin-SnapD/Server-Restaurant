@@ -13,7 +13,7 @@ feedbackRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, async (req, res, next) => {
     try {
-        const feedback = await Feedback.find(req.query);
+        const feedback = await Feedback.find(req.query).lean();
         res.status(200).json(feedback);
     } catch (err) {
         next(err);
@@ -22,8 +22,7 @@ feedbackRouter.route('/')
 .post(cors.corsWithOptions, async (req, res, next) => {
     try {
         const feedback = await Feedback.create(req.body);
-        console.log('Feedback Created ', feedback);
-        res.status(200).json(feedback);
+        res.status(201).json(feedback);
     } catch (err) {
         next(err);
     }
@@ -44,7 +43,7 @@ feedbackRouter.route('/:feedbackId')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, async (req, res, next) => {
     try {
-        const feedback = await Feedback.findById(req.params.feedbackId);
+        const feedback = await Feedback.findById(req.params.feedbackId).lean();
         if (!feedback) {
             const err = new Error('Feedback not found');
             err.status = 404;
@@ -62,7 +61,7 @@ feedbackRouter.route('/:feedbackId')
     try {
         const feedback = await Feedback.findByIdAndUpdate(req.params.feedbackId, {
             $set: req.body
-        }, { new: true });
+        }, { new: true, runValidators: true });
         
         if (!feedback) {
             const err = new Error('Feedback not found');
@@ -77,7 +76,7 @@ feedbackRouter.route('/:feedbackId')
 })
 .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
     try {
-        const resp = await Feedback.findByIdAndRemove(req.params.feedbackId);
+        const resp = await Feedback.findByIdAndDelete(req.params.feedbackId);
         if (!resp) {
             const err = new Error('Feedback not found');
             err.status = 404;

@@ -13,7 +13,7 @@ dishRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, async (req, res, next) => {
     try {
-        const dishes = await Dishes.find(req.query);
+        const dishes = await Dishes.find(req.query).lean();
         res.status(200).json(dishes);
     } catch (err) {
         next(err);
@@ -22,8 +22,7 @@ dishRouter.route('/')
 .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
     try {
         const dish = await Dishes.create(req.body);
-        console.log('Dish Created ', dish);
-        res.status(200).json(dish);
+        res.status(201).json(dish);
     } catch (err) {
         next(err);
     }
@@ -44,7 +43,7 @@ dishRouter.route('/:dishId')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, async (req, res, next) => {
     try {
-        const dish = await Dishes.findById(req.params.dishId);
+        const dish = await Dishes.findById(req.params.dishId).lean();
         if (!dish) {
             const err = new Error('Dish not found');
             err.status = 404;
@@ -62,7 +61,7 @@ dishRouter.route('/:dishId')
     try {
         const dish = await Dishes.findByIdAndUpdate(req.params.dishId, {
             $set: req.body
-        }, { new: true });
+        }, { new: true, runValidators: true });
         
         if (!dish) {
             const err = new Error('Dish not found');
@@ -77,7 +76,7 @@ dishRouter.route('/:dishId')
 })
 .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
     try {
-        const resp = await Dishes.findByIdAndRemove(req.params.dishId);
+        const resp = await Dishes.findByIdAndDelete(req.params.dishId);
         if (!resp) {
             const err = new Error('Dish not found');
             err.status = 404;
@@ -94,30 +93,54 @@ dishRouter.route('/:dishId/comments')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, async (req, res, next) => {
     try {
-        const dish = await Dishes.findById(req.params.dishId);
+        const dish = await Dishes.findById(req.params.dishId).select('comments').lean();
         if (!dish) {
             const err = new Error('Dish not found');
             err.status = 404;
             return next(err);
         }
-        res.status(200).json(dish.comments);
+        res.status(200).json(dish.comments || []);
     } catch (err) {
         next(err);
     }
 })
-.post(cors.corsWithOptions, authenticate.verifyUser, async (req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUserOptional, async (req, res, next) => {
     try {
+        const rating = Number(req.body.rating);
+        const commentText = typeof req.body.comment === 'string' ? req.body.comment.trim() : '';
+        const author = (req.user && req.user.username) ||
+            (typeof req.body.author === 'string' && req.body.author.trim()) ||
+            'Guest';
+
+        if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+            const err = new Error('Rating must be a whole number between 1 and 5');
+            err.status = 400;
+            return next(err);
+        }
+        if (!commentText) {
+            const err = new Error('Comment is required');
+            err.status = 400;
+            return next(err);
+        }
+
         const dish = await Dishes.findById(req.params.dishId);
         if (!dish) {
             const err = new Error('Dish not found');
             err.status = 404;
             return next(err);
         }
-        
-        req.body.author = req.user._id;
-        dish.comments.push(req.body);
-        const savedDish = await dish.save();
-        res.status(200).json(savedDish);
+
+        const newComment = dish.comments.create({
+            rating: rating,
+            comment: commentText,
+            author: author.slice(0, 50)
+        });
+        dish.comments.push(newComment);
+        await dish.save();
+
+        // Return the created comment (with its dish id) so clients can add it
+        // to their local state without refetching the whole dish.
+        res.status(201).json({ ...newComment.toObject(), dishId: dish._id });
     } catch (err) {
         next(err);
     }
@@ -134,9 +157,7 @@ dishRouter.route('/:dishId/comments')
             return next(err);
         }
         
-        for (let i = (dish.comments.length - 1); i >= 0; i--) {
-            dish.comments.id(dish.comments[i]._id).remove();
-        }
+        dish.comments = [];
         const savedDish = await dish.save();
         res.status(200).json(savedDish);
     } catch (err) {

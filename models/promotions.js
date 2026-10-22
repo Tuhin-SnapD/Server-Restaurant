@@ -35,6 +35,8 @@ const promoSchema = new Schema({
     timestamps: true
 });
 
+promoSchema.index({ featured: 1 });
+
 const Promotions = mongoose.model('Promotion', promoSchema);
 
 module.exports = Promotions;

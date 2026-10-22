@@ -33,6 +33,11 @@ const feedbackSchema = new Schema({
         default: 'Tel.',
         enum: ['Tel.', 'Email']
     },
+    feedbackType: {
+        type: String,
+        default: 'general',
+        enum: ['general', 'compliment', 'suggestion', 'complaint']
+    },
     message: {
         type: String,
         required: true,

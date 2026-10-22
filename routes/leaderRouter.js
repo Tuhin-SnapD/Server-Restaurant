@@ -13,7 +13,7 @@ leaderRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, async (req, res, next) => {
     try {
-        const leaders = await Leaders.find(req.query);
+        const leaders = await Leaders.find(req.query).lean();
         res.status(200).json(leaders);
     } catch (err) {
         next(err);
@@ -22,8 +22,7 @@ leaderRouter.route('/')
 .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
     try {
         const leader = await Leaders.create(req.body);
-        console.log('Leader Created ', leader);
-        res.status(200).json(leader);
+        res.status(201).json(leader);
     } catch (err) {
         next(err);
     }
@@ -44,7 +43,7 @@ leaderRouter.route('/:leaderId')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, async (req, res, next) => {
     try {
-        const leader = await Leaders.findById(req.params.leaderId);
+        const leader = await Leaders.findById(req.params.leaderId).lean();
         if (!leader) {
             const err = new Error('Leader not found');
             err.status = 404;
@@ -62,7 +61,7 @@ leaderRouter.route('/:leaderId')
     try {
         const leader = await Leaders.findByIdAndUpdate(req.params.leaderId, {
             $set: req.body
-        }, { new: true });
+        }, { new: true, runValidators: true });
         
         if (!leader) {
             const err = new Error('Leader not found');
@@ -77,7 +76,7 @@ leaderRouter.route('/:leaderId')
 })
 .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
     try {
-        const resp = await Leaders.findByIdAndRemove(req.params.leaderId);
+        const resp = await Leaders.findByIdAndDelete(req.params.leaderId);
         if (!resp) {
             const err = new Error('Leader not found');
             err.status = 404;

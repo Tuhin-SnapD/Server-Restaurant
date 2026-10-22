@@ -35,6 +35,8 @@ const leaderSchema = new Schema({
     timestamps: true
 });
 
+leaderSchema.index({ featured: 1 });
+
 const Leaders = mongoose.model('Leader', leaderSchema);
 
 module.exports = Leaders;

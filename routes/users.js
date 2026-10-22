@@ -13,7 +13,7 @@ router.options('*', cors.corsWithOptions, (req, res) => { res.sendStatus(200); }
 /* GET users listing. */
 router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
   try {
-    const users = await User.find({});
+    const users = await User.find({}).select('username firstname lastname admin createdAt').lean();
     res.status(200).json(users);
   } catch (err) {
     next(err);
@@ -33,7 +33,10 @@ router.post('/signup', cors.corsWithOptions, async (req, res, next) => {
       res.status(200).json({success: true, status: 'Registration Successful!'});
     });
   } catch (err) {
-    res.status(500).json({err: err.message});
+    if (err.name === 'UserExistsError') {
+      return res.status(409).json({ success: false, status: 'Username already exists' });
+    }
+    next(err);
   }
 });
 
@@ -58,16 +61,12 @@ router.post('/login', cors.corsWithOptions, (req, res, next) => {
   }) (req, res, next);
 });
 
-router.get('/logout', cors.corsWithOptions, (req, res, next) => {
+router.get('/logout', cors.corsWithOptions, (req, res) => {
   if (req.session) {
     req.session.destroy();
-    res.clearCookie('session-id');
-    res.redirect('/');
-  } else {
-    const err = new Error('You are not logged in!');
-    err.status = 403;
-    next(err);
   }
+  res.clearCookie('session-id');
+  res.status(200).json({ success: true, status: 'Logged out' });
 });
 
 router.get('/facebook/token', passport.authenticate('facebook-token'), (req, res) => {
@@ -86,7 +85,17 @@ router.get('/checkJWTToken', cors.corsWithOptions, (req, res, next) => {
       return;
     }
     
-    res.status(200).json({status: 'JWT valid!', success: true, user: user});
+    res.status(200).json({
+      status: 'JWT valid!',
+      success: true,
+      user: {
+        _id: user._id,
+        username: user.username,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        admin: user.admin
+      }
+    });
   }) (req, res);
 });
 

@@ -10,7 +10,7 @@ module.exports = {
     'maxFileSize': process.env.MAX_FILE_SIZE || 5242880,
     'sessionSecret': process.env.SESSION_SECRET || 'session-secret-key',
     'sessionTtl': process.env.SESSION_TTL || 86400,
-    'allowedOrigins': process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000', 'http://localhost:4200', 'http://localhost:8000'],
+    'allowedOrigins': process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:4200', 'http://localhost:8000', 'http://localhost:8001', 'http://localhost:8002'],
     'facebook': {
         clientId: process.env.FACEBOOK_CLIENT_ID || '478025973852330',
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET || 'f29ff973f484d5e3a9082593b2f83f06'
