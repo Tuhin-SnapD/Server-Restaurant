@@ -1,235 +1,68 @@
-# Restaurant Backend Server
+# Restaurant backend API
 
-A modern restaurant management server with authentication and API endpoints built with Node.js, Express, and MongoDB.
+Express and MongoDB API for the L’Étoile restaurant applications. It provides menu, team, promotion, review, guest feedback and reservation data consumed by both the React and Angular frontends.
 
-## 🚀 Quick Start
+## Requirements
 
-### Prerequisites
-- Node.js >= 14.0.0
-- MongoDB (local or Atlas)
+- Node.js 14 or newer
+- MongoDB running locally or a MongoDB connection string
 
-### Installation
+## Install and run
 
-1. **Clone and install dependencies:**
 ```bash
-git clone <your-repo>
-cd Server-Restaurant
 npm install
 ```
 
-2. **Set up environment variables:**
-```bash
-cp env.example .env
-# Edit .env with your configuration
-```
+Copy `env.example` to `.env`, then set the database URL and secrets for your environment. For a local MongoDB instance, the default database is `mongodb://127.0.0.1:27017/conFusion`.
 
-3. **Start development server:**
 ```bash
 npm run dev
 ```
 
-## 🔧 Configuration
+The API defaults to port 8000. In the parent workspace, `scripts/start-backend.ps1` creates `.env` from `env.example` if needed and starts the API on port 8002, matching both frontend configurations. Set `PORT` and `ALLOWED_ORIGINS` as needed for another deployment.
 
-### Environment Variables
+## Data initialization
 
-Copy `env.example` to `.env` and configure:
+The starter data is in `db.json`. To populate a local database:
 
-```env
-# Server Configuration
-NODE_ENV=development
-PORT=8000
-
-# Database Configuration
-MONGO_URL=mongodb://127.0.0.1:27017/conFusion
-
-# Security
-SECRET_KEY=your-super-secret-key-here
-JWT_SECRET=your-jwt-secret-key-here
-
-# CORS Configuration
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:4200,http://localhost:8000
-```
-
-## 🗄️ Database Management
-
-### Initial Setup
-
-Populate the database with sample data:
 ```bash
 npm run populate
 ```
 
-### Database Operations
+**Warning:** `populateDb.js` deletes and replaces the dishes, leaders, promotions, feedback and comments collections. Run it only when replacing those collections is intended. The parent workspace's start script runs it automatically only when the dishes collection is empty.
 
-```bash
-# Backup database
-npm run db:backup
+## API resources
 
-# Restore from backup
-npm run db:restore ./backups/backup-2024-01-01.json
+- `/users` — signup, login and user operations.
+- `/dishes` — menu items and dish details.
+- `/leaders` — team profiles.
+- `/promotions` — offers and promotions.
+- `/comments` — dish reviews and comments.
+- `/feedback` — guest feedback submission.
+- `/favorites` — authenticated user favorites.
+- `/imageUpload` — image upload.
+- `/reservations` — availability and reservation requests.
+- `/restaurant/overview` — live service status and capacity overview.
 
-# Clear database
-npm run db:clear
-
-# View database statistics
-npm run db:stats
-
-# Run database migrations
-npm run db:migrate
-```
-
-### Manual Database Management
-
-```bash
-# Backup specific collection
-node scripts/db-manager.js backup dishes
-
-# Clear specific collection
-node scripts/db-manager.js clear users
-
-# View all commands
-node scripts/db-manager.js
-```
-
-
-
-## 📁 Project Structure
-
-```
-Server-Restaurant/
-├── app.js                 # Express app configuration
-├── config.js             # Configuration management
-├── populateDb.js         # Database population script
-├── db.json              # Sample data
-├── scripts/
-│   └── db-manager.js    # Database management
-├── models/              # MongoDB models
-├── routes/              # API routes
-├── public/              # Static files
-├── sessions/            # Session storage
-└── backups/             # Database backups
-```
-
-## 🔌 API Endpoints
-
-### Authentication
-- `POST /users/signup` - User registration
-- `POST /users/login` - User login
-- `GET /users/logout` - User logout
-
-### Dishes
-- `GET /dishes` - Get all dishes
-- `GET /dishes/:id` - Get specific dish
-- `POST /dishes` - Create new dish (admin)
-- `PUT /dishes/:id` - Update dish (admin)
-- `DELETE /dishes/:id` - Delete dish (admin)
-
-### Leaders
-- `GET /leaders` - Get all leaders
-- `GET /leaders/:id` - Get specific leader
-- `POST /leaders` - Create new leader (admin)
-- `PUT /leaders/:id` - Update leader (admin)
-- `DELETE /leaders/:id` - Delete leader (admin)
-
-### Promotions
-- `GET /promotions` - Get all promotions
-- `GET /promotions/:id` - Get specific promotion
-- `POST /promotions` - Create new promotion (admin)
-- `PUT /promotions/:id` - Update promotion (admin)
-- `DELETE /promotions/:id` - Delete promotion (admin)
-
-### Comments & Feedback
-- `GET /comments` - Get all comments
-- `POST /comments` - Add comment
-- `GET /feedback` - Get all feedback
-- `POST /feedback` - Submit feedback
+Common public reads include `GET /dishes`, `GET /leaders`, `GET /promotions`, `GET /comments`, and `GET /restaurant/overview`. Some create, update, moderation and reservation-management operations require authentication or staff authorization.
 
 ### Reservations
-- `GET /restaurant/overview` - Live dinner service and remaining seating capacity for the restaurant's local date
-- `GET /reservations/availability?date=YYYY-MM-DD&partySize=2` - Live seating capacity for each dinner time
-- `POST /reservations` - Request a table; returns a reference and a `requested` status
-- `GET /reservations?date=YYYY-MM-DD&status=requested` - List reservations (admin)
-- `PUT /reservations/:id/status` - Confirm, cancel, or complete a request (admin)
 
-Dinner seatings run from 17:00 to 21:00 in half-hour intervals using `RESTAURANT_TIMEZONE` (defaults to `Asia/Kolkata`). Each seating has 40 guest seats and accepts parties of up to 12. Capacity is reserved atomically per date and time; past seatings are returned as unavailable and cancelled requests release their seats. Reservation requests are not confirmations—the restaurant must confirm them.
+- `GET /reservations/availability?date=YYYY-MM-DD&partySize=2` returns available half-hour dinner seatings.
+- `POST /reservations` creates a pending request with `guestName`, `email`, `phone`, `date`, `time`, `partySize`, optional `occasion` (`dinner`, `birthday`, `anniversary`, `business`, `other`) and optional `note`.
+- `GET /reservations?date=YYYY-MM-DD&status=requested` lists requests for staff.
+- `PUT /reservations/:reservationId/status` lets staff confirm, cancel or complete a request.
 
-### Favorites
-- `GET /favorites` - Get user favorites
-- `POST /favorites/:dishId` - Add to favorites
-- `DELETE /favorites/:dishId` - Remove from favorites
+Dinner service runs from 17:00 to 21:00 in 30-minute intervals. Each seating has 40 guest seats and parties can contain up to 12 guests. Past seatings are unavailable. Capacity is reserved atomically; cancelling a request releases its seats. A submitted request is not a confirmed booking. The timezone is controlled by `RESTAURANT_TIMEZONE` and defaults to `Asia/Kolkata`.
 
-### File Upload
-- `POST /imageUpload` - Upload images
+## Environment variables
 
-## 🔒 Security Features
+See `env.example` for the available settings, including `PORT`, `MONGO_URL`, authentication/session secrets, upload limits, CORS origins and Facebook OAuth settings. Never commit a populated `.env` file or production secrets.
 
-- JWT authentication
-- Session management
-- CORS protection
-- Input validation
-- XSS protection
-- CSRF protection
-- Secure headers
+## Scripts
 
-## 📊 Monitoring & Maintenance
+- `npm start` — run the API with Node.
+- `npm run dev` — run with Nodemon.
+- `npm run populate` — replace seeded collections with `db.json` data.
 
-### Health Check
-```bash
-curl http://localhost:8000/
-```
-
-### Database Monitoring
-```bash
-# Check database statistics
-npm run db:stats
-
-# Monitor database size
-node scripts/db-manager.js stats
-```
-
-### Backup Strategy
-```bash
-# Daily backup (add to cron)
-0 2 * * * cd /path/to/server && npm run db:backup
-
-# Manual backup before updates
-npm run db:backup
-```
-
-## 🛠️ Troubleshooting
-
-### Common Issues
-
-1. **Database Connection Issues:**
-   - Check MONGO_URL in environment variables
-   - Ensure MongoDB is running
-   - Verify network connectivity
-
-2. **Port Already in Use:**
-   - Check if another process is using the port
-   - Change PORT in environment variables
-   - Kill existing processes: `lsof -ti:8000 | xargs kill`
-
-### Logs
-- Application logs: Check console output
-- Session logs: `./sessions/`
-- Database logs: MongoDB logs
-
-## 📝 License
-
-MIT License - see LICENSE file for details.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📞 Support
-
-For issues and questions:
-- Check the troubleshooting section
-- Review the API documentation
-- Create an issue in the repository
+The `npm test` script is currently a placeholder and exits with an error; no test suite is configured in this package.
