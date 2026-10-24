@@ -144,6 +144,15 @@ Server-Restaurant/
 - `GET /feedback` - Get all feedback
 - `POST /feedback` - Submit feedback
 
+### Reservations
+- `GET /restaurant/overview` - Live dinner service and remaining seating capacity for the restaurant's local date
+- `GET /reservations/availability?date=YYYY-MM-DD&partySize=2` - Live seating capacity for each dinner time
+- `POST /reservations` - Request a table; returns a reference and a `requested` status
+- `GET /reservations?date=YYYY-MM-DD&status=requested` - List reservations (admin)
+- `PUT /reservations/:id/status` - Confirm, cancel, or complete a request (admin)
+
+Dinner seatings run from 17:00 to 21:00 in half-hour intervals using `RESTAURANT_TIMEZONE` (defaults to `Asia/Kolkata`). Each seating has 40 guest seats and accepts parties of up to 12. Capacity is reserved atomically per date and time; past seatings are returned as unavailable and cancelled requests release their seats. Reservation requests are not confirmations—the restaurant must confirm them.
+
 ### Favorites
 - `GET /favorites` - Get user favorites
 - `POST /favorites/:dishId` - Add to favorites

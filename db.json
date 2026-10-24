@@ -3,7 +3,7 @@
     {
       "id": 0,
       "name": "Truffle-Infused Wagyu Beef Carpaccio",
-      "image": "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&h=600&fit=crop",
+      "image": "https://images.unsplash.com/photo-1773903026532-f478383a4ee4?auto=format&fit=crop&w=1600&q=85",
       "category": "appetizer",
       "label": "Chef's Special",
       "price": "24.99",
@@ -61,6 +61,86 @@
       "price": "14.99",
       "featured": false,
       "description": "Classic French crème brûlée made with Madagascar vanilla beans and organic cream. Topped with a perfectly caramelized sugar crust that shatters with each spoonful. Served with fresh seasonal berries and a delicate tuile cookie."
+    },
+    {
+      "id": 8,
+      "name": "Burrata with Heirloom Tomato & Basil",
+      "image": "https://images.unsplash.com/photo-1649400454485-b8ad827f929d?auto=format&fit=crop&w=1200&q=85",
+      "category": "appetizer",
+      "label": "Seasonal",
+      "price": "17.00",
+      "featured": false,
+      "description": "Creamy burrata with peak-season heirloom tomatoes, basil, aged sherry vinegar, and grilled country bread. A bright, shareable start built around produce at its best."
+    },
+    {
+      "id": 9,
+      "name": "Wild Mushroom Velouté",
+      "image": "https://images.unsplash.com/photo-1659603851579-17755833517e?auto=format&fit=crop&w=1200&q=85",
+      "category": "appetizer",
+      "label": "Vegetarian",
+      "price": "15.00",
+      "featured": false,
+      "description": "A silky blend of roasted wild mushrooms, thyme, and vegetable stock finished with crème fraîche and crisp sourdough. Deeply savory, warming, and vegetarian."
+    },
+    {
+      "id": 10,
+      "name": "Duck Breast with Cherry-Port Jus",
+      "image": "https://images.unsplash.com/photo-1749640566096-5d8098d452b4?auto=format&fit=crop&w=1200&q=85",
+      "category": "mains",
+      "label": "House Favorite",
+      "price": "36.00",
+      "featured": false,
+      "description": "Pan-roasted duck breast with crisp skin, cherry-port jus, buttered greens, and a golden potato pavé. Rich, balanced, and finished to order."
+    },
+    {
+      "id": 11,
+      "name": "Charred Cauliflower Steak",
+      "image": "https://images.unsplash.com/photo-1576209151493-cca706964f6f?auto=format&fit=crop&w=1200&q=85",
+      "category": "mains",
+      "label": "Plant-Based",
+      "price": "26.00",
+      "featured": false,
+      "description": "Thick-cut cauliflower charred until tender, served with smoked almond romesco, crispy chickpeas, herbs, and lemon. A generous plant-based main with bright, toasted flavors."
+    },
+    {
+      "id": 12,
+      "name": "Meyer Lemon Tart",
+      "image": "https://images.unsplash.com/photo-1543508185-225c92847541?auto=format&fit=crop&w=1200&q=85",
+      "category": "dessert",
+      "label": "Seasonal",
+      "price": "13.00",
+      "featured": false,
+      "description": "A crisp butter crust filled with fragrant Meyer lemon curd, served with softly whipped cream and candied citrus. Tart, sunny, and made for sharing."
+    },
+    {
+      "id": 13,
+      "name": "Three-Scoop Seasonal Sorbet",
+      "image": "https://images.unsplash.com/photo-1724805053558-aea1220afbfa?auto=format&fit=crop&w=1200&q=85",
+      "category": "dessert",
+      "label": "Dairy-Free",
+      "price": "11.00",
+      "featured": false,
+      "description": "Three house-selected fruit sorbets made with ripe seasonal produce. Naturally dairy-free, refreshing, and served with fresh fruit. Ask the team for today's flavors."
+    },
+    {
+      "id": 14,
+      "name": "Lemon Verbena House Lemonade",
+      "image": "https://images.unsplash.com/photo-1631308492942-3a713d7fd02e?auto=format&fit=crop&w=1200&q=85",
+      "category": "beverage",
+      "label": "Zero-Proof",
+      "price": "8.00",
+      "featured": false,
+      "description": "Fresh lemon juice, house-made lemon verbena syrup, and sparkling water over ice. Bright, aromatic, and alcohol-free."
+    },
+    {
+      "id": 15,
+      "name": "Classic Espresso Martini",
+      "image": "https://images.unsplash.com/photo-1664961444258-2fb083ae59d0?auto=format&fit=crop&w=1200&q=85",
+      "category": "beverage",
+      "label": "After Dinner",
+      "price": "16.00",
+      "featured": false,
+      "description": "Fresh espresso shaken with vodka and coffee liqueur until chilled and silky, finished with three coffee beans. Contains alcohol."
     }
   ],
   "comments": [

@@ -19,6 +19,8 @@ const uploadRouter = require('./routes/uploadRouter');
 const favouriteRouter = require('./routes/favoriteRouter');
 const commentRouter = require('./routes/commentRouter');
 const feedbackRouter = require('./routes/feedbackRouter');
+const reservationRouter = require('./routes/reservationRouter');
+const restaurantRouter = require('./routes/restaurantRouter');
 
 const mongoose = require('mongoose');
 
@@ -92,6 +94,8 @@ app.use('/imageUpload', uploadRouter);
 app.use('/favorites', favouriteRouter);
 app.use('/comments', commentRouter);
 app.use('/feedback', feedbackRouter);
+app.use('/reservations', reservationRouter);
+app.use('/restaurant', restaurantRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
